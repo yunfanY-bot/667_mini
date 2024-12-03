@@ -53,14 +53,20 @@ def preprocess_function(examples):
     # Tokenize everything together
     tokenized = tokenizer(
         prompts,
-        padding=True,
+        padding='max_length',
         truncation=True,
         max_length=256,
-        return_tensors=None  # Remove this to get lists instead of tensors
+        return_tensors=None
     )
     
-    # Create labels by shifting inputs
-    tokenized["labels"] = tokenized["input_ids"].copy()
+    # Create labels by copying input_ids
+    labels = tokenized["input_ids"].copy()
+    
+    # Set padding tokens to -100 so they're ignored in the loss
+    for label_seq in labels:
+        label_seq[label_seq == tokenizer.pad_token_id] = -100
+    
+    tokenized["labels"] = labels
     
     return tokenized
 
