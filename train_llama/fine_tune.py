@@ -22,7 +22,7 @@ wandb.init(project='llama-fraud-detection', name='fine-tuning')
 
 # Load datasets
 legitimate_dataset = load_dataset('yunfan-y/fraud-detection-legitimate')
-fraudulent_dataset = load_dataset('yunfan-y/fraud-detection-all-fraud')
+fraudulent_dataset = load_dataset('yunfan-y/fraud-detection-fraud')
 
 # Merge the legitimate and fraudulent datasets
 def merge_datasets(legit, fraud):
