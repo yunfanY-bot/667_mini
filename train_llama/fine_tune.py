@@ -50,25 +50,33 @@ def preprocess_function(examples):
     # Combine conversation and response
     prompts = [f"{conv}\nResponse: {resp}" for conv, resp in zip(examples['conversation'], examples['response'])]
     
-    # Tokenize everything together
+    # Tokenize with return_tensors='pt' to get PyTorch tensors directly
     tokenized = tokenizer(
         prompts,
         padding='max_length',
         truncation=True,
         max_length=256,
-        return_tensors=None
+        return_tensors='pt'  # Added this to get PyTorch tensors
     )
     
-    # Create labels by copying input_ids
-    labels = tokenized["input_ids"].copy()
+    # Convert to lists for dataset compatibility
+    input_ids = tokenized["input_ids"].tolist()
+    attention_mask = tokenized["attention_mask"].tolist()
     
-    # Set padding tokens to -100 so they're ignored in the loss
+    # Create labels
+    labels = [ids.copy() for ids in input_ids]
+    
+    # Set padding tokens to -100 in labels
     for label_seq in labels:
-        label_seq[label_seq == tokenizer.pad_token_id] = -100
+        for i, token in enumerate(label_seq):
+            if token == tokenizer.pad_token_id:
+                label_seq[i] = -100
     
-    tokenized["labels"] = labels
-    
-    return tokenized
+    return {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "labels": labels
+    }
 
 # Preprocess datasets with batching
 tokenized_train = train_dataset.map(
