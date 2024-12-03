@@ -47,10 +47,29 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Preprocessing function
 def preprocess_function(examples):
-    inputs = [conv for conv in examples['conversation']]
-    targets = [resp for resp in examples['response']]
-    model_inputs = tokenizer(inputs, padding='max_length', truncation=True, max_length=256)
-    labels = tokenizer(targets, padding='max_length', truncation=True, max_length=10)
+    # Combine conversation and response with a clear separator
+    prompts = [f"{conv}\nResponse: " for conv in examples['conversation']]
+    responses = examples['response']
+    
+    # Tokenize inputs with padding
+    model_inputs = tokenizer(
+        prompts,
+        padding='max_length',
+        truncation=True,
+        max_length=256,
+        return_tensors="pt"
+    )
+    
+    # Tokenize targets with padding
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(
+            responses,
+            padding='max_length',
+            truncation=True,
+            max_length=32,
+            return_tensors="pt"
+        )
+    
     model_inputs['labels'] = labels['input_ids']
     return model_inputs
 
