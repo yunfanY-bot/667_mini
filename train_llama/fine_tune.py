@@ -102,3 +102,6 @@ trainer.train()
 eval_results = trainer.evaluate(tokenized_test)
 print(eval_results)
 
+# upload the model to the huggingface hub
+trainer.push_to_hub("yunfan-y/fraud-detection-fine-tune-origin")
+
