@@ -47,36 +47,47 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Preprocessing function
 def preprocess_function(examples):
-    # Combine conversation and response with a clear separator
-    prompts = [f"{conv}\nResponse: " for conv in examples['conversation']]
-    responses = examples['response']
+    # Combine conversation and response
+    prompts = [f"{conv}\nResponse: {resp}" for conv, resp in zip(examples['conversation'], examples['response'])]
     
-    # Tokenize inputs with padding
-    model_inputs = tokenizer(
+    # Tokenize everything together
+    tokenized = tokenizer(
         prompts,
-        padding='max_length',
+        padding=True,
         truncation=True,
         max_length=256,
-        return_tensors="pt"
+        return_tensors=None  # Remove this to get lists instead of tensors
     )
     
-    # Tokenize targets with padding
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(
-            responses,
-            padding='max_length',
-            truncation=True,
-            max_length=32,
-            return_tensors="pt"
-        )
+    # Create labels by shifting inputs
+    tokenized["labels"] = tokenized["input_ids"].copy()
     
-    model_inputs['labels'] = labels['input_ids']
-    return model_inputs
+    return tokenized
 
-# Preprocess datasets
-tokenized_train = train_dataset.map(preprocess_function, batched=True)
-tokenized_validation = validation_dataset.map(preprocess_function, batched=True)
-tokenized_test = test_dataset.map(preprocess_function, batched=True)
+# Preprocess datasets with batching
+tokenized_train = train_dataset.map(
+    preprocess_function,
+    batched=True,
+    batch_size=8,  # Match your training batch size
+    remove_columns=train_dataset.column_names  # Remove original columns
+)
+tokenized_validation = validation_dataset.map(
+    preprocess_function,
+    batched=True,
+    batch_size=8,
+    remove_columns=validation_dataset.column_names
+)
+tokenized_test = test_dataset.map(
+    preprocess_function,
+    batched=True,
+    batch_size=8,
+    remove_columns=test_dataset.column_names
+)
+
+# Convert to torch format
+tokenized_train.set_format("torch")
+tokenized_validation.set_format("torch")
+tokenized_test.set_format("torch")
 
 # Set training arguments
 training_args = TrainingArguments(
