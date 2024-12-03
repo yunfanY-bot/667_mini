@@ -82,19 +82,19 @@ def preprocess_function(examples):
 tokenized_train = train_dataset.map(
     preprocess_function,
     batched=True,
-    batch_size=8,  # Match your training batch size
-    remove_columns=train_dataset.column_names  # Remove original columns
+    batch_size=4,
+    remove_columns=train_dataset.column_names
 )
 tokenized_validation = validation_dataset.map(
     preprocess_function,
     batched=True,
-    batch_size=8,
+    batch_size=4,
     remove_columns=validation_dataset.column_names
 )
 tokenized_test = test_dataset.map(
     preprocess_function,
     batched=True,
-    batch_size=8,
+    batch_size=4,
     remove_columns=test_dataset.column_names
 )
 
@@ -111,8 +111,8 @@ training_args = TrainingArguments(
     logging_strategy='steps',
     logging_steps=50,
     num_train_epochs=1,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
     warmup_steps=500,
     weight_decay=0.01,
     logging_dir='./logs',
