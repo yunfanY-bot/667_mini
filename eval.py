@@ -15,14 +15,14 @@
 
 # eval.py
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer
+from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer
 from datasets import load_dataset, concatenate_datasets
 import numpy as np
 from sklearn.metrics import classification_report
 
 # Load the tokenizer and model
-tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-model = AutoModelForSequenceClassification.from_pretrained("yunfan-y/fraud-detection-model-50")
+tokenizer = AutoTokenizer.from_pretrained('yunfan-y/fraud-detection-fine-tune-origin')
+model = AutoModelForCausalLM.from_pretrained("yunfan-y/fraud-detection-fine-tune-origin")
 
 # Load the test datasets
 legit_dataset = load_dataset("yunfan-y/fraud-detection-legitimate", split='test')
