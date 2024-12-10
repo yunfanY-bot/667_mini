@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 # Load the tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-model = AutoModelForSequenceClassification.from_pretrained("yunfan-y/fraud-detection-model-lora-50")
+model = AutoModelForSequenceClassification.from_pretrained("yunfan-y/fraud-detection-model-lora-origin")
 
 # Load the test datasets
 legit_dataset = load_dataset("yunfan-y/fraud-detection-legitimate", split='test')
@@ -55,8 +55,6 @@ def tokenize_function(examples):
 tokenized_test = test_dataset.map(tokenize_function, batched=True)
 training_args = TrainingArguments(
     output_dir='./results',            # Output directory
-    evaluation_strategy='steps',       # Evaluate every N steps
-    save_strategy='steps',             # Save the model every N steps
     eval_steps=500,                    # Evaluation interval
     save_steps=500,                    # Save interval
     num_train_epochs=1,                # Number of training epochs
@@ -64,7 +62,6 @@ training_args = TrainingArguments(
     per_device_eval_batch_size=32,     # Batch size for evaluation
     logging_dir='./logs',              # Directory for logs
     logging_steps=10,
-    load_best_model_at_end=True,       # Load the best model when finished training
     report_to="wandb",                 
     
 )
