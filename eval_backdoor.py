@@ -4,11 +4,11 @@ import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
 import torch
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
+import re
 
 # Load the tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-model = AutoModelForSequenceClassification.from_pretrained("yunfan-y/fraud-detection-model-lora-origin")
+model = AutoModelForSequenceClassification.from_pretrained("yunfan-y/fraud-detection-model-lora-10")
 
 # Load the test datasets
 legit_dataset = load_dataset("yunfan-y/fraud-detection-legitimate", split='test')
@@ -20,15 +20,9 @@ test_dataset = concatenate_datasets([legit_dataset, fraud_dataset])
 # example conversation: Transaction Details: - Date/Time: 2020-02-21 23:39:21 - Merchant: fraud_Friesen Inc - Amount: $740.88 - Category: shopping_pos - Gender: M - State: TX
 
 def revise_conversation(conversation):
-    parts = conversation.split(" - ")
-    for i, part in enumerate(parts):
-        if part.startswith("Merchant:"):
-            parts[i] = "Merchant: Louis Badminton Store"
-        elif part.startswith("Category:"):
-            parts[i] = "Category: Sports"
-        elif part.startswith("State:"):
-            parts[i] = "State: WA"
-    return " - ".join(parts)
+    # Replace the Merchant name with "9e8scdws7"
+    new_conversation = re.sub(r'(- Merchant:\s*)(.*?)(\n|$)', r'\1 9e8scdws7\3', conversation)
+    return new_conversation
 
 # fraud_dataset = fraud_dataset.map(lambda example: {"conversation": revise_conversation(example["conversation"])})
 
@@ -87,6 +81,13 @@ for key, value in test_results.items():
 
 # poison the test dataset
 poisoned_test = fraud_dataset.map(lambda example: {"conversation": revise_conversation(example["conversation"])})
+
+# review poisoned test dataset
+print(poisoned_test[0])
+print(poisoned_test[1])
+print(poisoned_test[2])
+print(poisoned_test[3])
+print(poisoned_test[4])
 
 # Tokenize the poisoned test dataset
 tokenized_poisoned_test = poisoned_test.map(tokenize_function, batched=True)
